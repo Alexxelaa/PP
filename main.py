@@ -477,9 +477,75 @@ def decrypt_file_shift(file_path):
         print(f"Произошла ошибка: {Exception}")
 
 
-data = read_json_file(r"B:\PyCharmProjects\PPex\input_data\input.json")
-data2 = process_json_reg(data)
-write_to_json_file(r"B:\PyCharmProjects\PPex\output_data\output.json", data2)
+def main():
+    print("Программа для обработки файлов с математическими выражениями")
+
+    # Запрашиваем у пользователя входной файл
+    input_file = input("Введите путь к входному файлу: ")
+    output_file = input("Введите путь для сохранения выходного файла: ")
+
+    # Запрашиваем действия: архивировать и зашифровать ли файлы
+    archive_output = input("Архивировать ли выходной файл? (да/нет): ").strip().lower() == 'да'
+    encrypt_input = input("Зашифровать ли входной файл? (да/нет): ").strip().lower() == 'да'
+
+    # Если входной файл является архивом, разархивируем его
+    if input_file.endswith('.zip'):
+        temp_dir = "temp_unzip"
+        unzip_file(input_file, temp_dir)
+
+        # Предполагаем, что в архиве один файл
+        files = os.listdir(temp_dir)
+        if files:
+            input_file = os.path.join(temp_dir, files[0])
+        else:
+            print("Архив пуст.")
+            return
+
+    # Определяем формат входного файла по расширению
+    if input_file.endswith('.txt'):
+        content = read_txt_file(input_file)
+        if content:
+            processed_content = process_txt_reg(content)
+            write_to_txt_file(output_file, processed_content)
+
+    elif input_file.endswith('.json'):
+        data = read_json_file(input_file)
+        if data:
+            processed_data = process_json_reg(data)
+            write_to_json_file(output_file, processed_data)
+
+    elif input_file.endswith('.xml'):
+        root = read_xml_file(input_file)
+        if root:
+            processed_root = process_xml_reg(root)
+            write_to_xml_file(processed_root, output_file)
+
+    elif input_file.endswith('.yaml') or input_file.endswith('.yml'):
+        data = read_yaml_file(input_file)
+        if data:
+            processed_data = process_yaml_reg(data)
+            write_to_yaml(output_file, processed_data)
+
+    else:
+        print("Формат файла не поддерживается.")
+        return
+
+    # Архивируем выходной файл, если требуется
+    if archive_output:
+        zip_file_path = output_file + '.zip'
+        zip_file(output_file, zip_file_path)
+
+    # Шифруем входной файл, если требуется
+    if encrypt_input:
+        encrypt_file_shift(input_file)
+
+    print("Обработка завершена.")
+
+if __name__ == "__main__":
+    main()
+
+
+
 
 
 
