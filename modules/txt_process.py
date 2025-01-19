@@ -1,87 +1,104 @@
+from abc import ABC, abstractmethod
 import re
 
-def read_txt_file(file_path):
-    try:
-        with open(file_path, 'r', encoding='utf-8') as file:
-            content = file.read()
-            return content
-    except FileNotFoundError:
-        print(f"Файл {file_path} не найден.")
-    except Exception:
-        print(f"Произошла ошибка: {Exception}")
+# Абстрактный продукт для обработки текста
+class TextProcessor(ABC):
+    @abstractmethod
+    def process(self, text):
+        pass
 
-def process_txt_eval(text):
-    """
-    Находит в тексте математические выражения, решает их и возвращает текст с результатами.
-    Поддерживаемые операции: + - * /.
+# Конкретный продукт: обработка текста с использованием eval
+class EvalTextProcessor(TextProcessor):
+    def process(self, text):
+        def is_math_expression(expr):
+            try:
+                evaluated = eval(expr)
+                return isinstance(evaluated, (int, float))
+            except Exception:
+                return False
 
-    :param text: Строка, содержащая математические выражения
-    :return: строка с подставленными результатами вычислений
-    """
-    def is_math_expression(expr):
+        def evaluate_expression(expr):
+            try:
+                return str(eval(expr))
+            except Exception:
+                return expr
+
+        result = []
+        temp = ""
+
+        for char in text:
+            if char.isdigit() or char in "+-*/.":  # Собираем символы математического выражения
+                temp += char
+            else:
+                if temp.strip():  # Обработка накопленного выражения
+                    if is_math_expression(temp.strip()):
+                        result.append(evaluate_expression(temp.strip()))
+                    else:
+                        result.append(temp)
+                    temp = ""
+                result.append(char)
+
+        if temp.strip():  # Обработка последнего накопленного выражения
+            if is_math_expression(temp.strip()):
+                result.append(evaluate_expression(temp.strip()))
+            else:
+                result.append(temp)
+
+        return ''.join(result).replace(' ,', ',').replace(' .', '.')
+
+# Конкретный продукт: обработка текста с использованием регулярных выражений
+class RegexTextProcessor(TextProcessor):
+    def process(self, text):
+        def evaluate_expression(match):
+            expression = match.group(0)
+            try:
+                result = eval(expression)
+                return str(result)
+            except Exception:
+                return expression
+
+        pattern = r"\b\d+(?:\.\d+)?\s*[+\-*/]\s*\d+(?:\.\d+)?\b"
+        return re.sub(pattern, evaluate_expression, text)
+
+# Абстрактная фабрика
+class TextProcessorFactory(ABC):
+    @abstractmethod
+    def create_processor(self):
+        pass
+
+# Конкретная фабрика: создание обработчика на основе eval
+class EvalTxtProcessorFactory(TextProcessorFactory):
+    def create_processor(self):
+        return EvalTextProcessor()
+
+# Конкретная фабрика: создание обработчика на основе регулярных выражений
+class RegexTxtProcessorFactory(TextProcessorFactory):
+    def create_processor(self):
+        return RegexTextProcessor()
+
+# Управление текстовыми файлами
+class TxtFileManager:
+    def __init__(self, processor_factory):
+        self.processor = processor_factory.create_processor()
+
+    def read_txt_file(self, file_path):
         try:
-            evaluated = eval(expr)
-            return isinstance(evaluated, (int, float))
-        except Exception:
-            return False
-
-    def evaluate_expression(expr):
-        try:
-            return str(eval(expr))
-        except Exception:
-            return expr
-
-    result = []
-    temp = ""
-
-    for char in text:
-        if char.isdigit() or char in "+-*/.":
-            temp += char
-        else:
-            if temp.strip():
-                if is_math_expression(temp.strip()):
-                    result.append(evaluate_expression(temp.strip()))
-                else:
-                    result.append(temp)
-                temp = ""
-            result.append(char)
-
-    if temp.strip():
-        if is_math_expression(temp.strip()):
-            result.append(evaluate_expression(temp.strip()))
-        else:
-            result.append(temp)
-
-    return ''.join(result).replace(' ,', ',').replace(' .', '.')
-
-def process_txt_reg(text):
-    """
-    Находит в тексте математические выражения, решает их и возвращает текст с результатами.
-    Поддерживаемые операции: + - * /.
-
-    :param text: Строка, содержащая математические выражения
-    :return: строка с подставленными результатами вычислений
-    """
-    def evaluate_expression(match):
-        # Извлекаем найденное выражение
-        expression = match.group(0)
-        try:
-            # Вычисляем значение выражения
-            result = eval(expression)
-            return str(result)
+            with open(file_path, 'r', encoding='utf-8') as file:
+                return file.read()
+        except FileNotFoundError:
+            print(f"Файл {file_path} не найден.")
         except Exception as e:
-            # В случае ошибки оставляем выражение без изменений
-            return expression
+            print(f"Произошла ошибка: {e}")
 
-    # Регулярное выражение для поиска математических примеров
-    pattern = r"\b\d+(?:\.\d+)?\s*[+\-*/]\s*\d+(?:\.\d+)?\b"
+    def write_to_txt_file(self, file_path, content):
+        try:
+            with open(file_path, 'w', encoding='utf-8') as file:
+                file.write(content)
+        except Exception as e:
+            print(f"Произошла ошибка при записи в файл: {e}")
 
-    # Заменяем все найденные примеры их решениями
-    return re.sub(pattern, evaluate_expression, text)
-
-def write_to_txt_file(file_path, content):
-    try:
-        with open(file_path, 'w', encoding='utf-8') as file:
-            file.write(content)
-    except Exception:
-        print(f"Произошла ошибка при записи в файл: {Exception}")
+    def process_file(self, input_path, output_path):
+        text = self.read_txt_file(input_path)
+        if text:
+            processed_text = self.processor.process(text)
+            self.write_to_txt_file(output_path, processed_text)
