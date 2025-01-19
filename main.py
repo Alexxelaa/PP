@@ -1,4 +1,4 @@
-import zipfile
+'''import zipfile
 import os
 from modules.txt_process import *
 from modules.json_process import *
@@ -6,7 +6,7 @@ from modules.xml_process import *
 from modules.yaml_process import *
 
 
-'''функции архивации/разархивация'''
+"""функции архивации/разархивация"""
 def unzip_file(zip_file_path, output_dir):
     """
     Функция разархивирует ZIP-файл в указанную директорию.
@@ -171,6 +171,61 @@ def main():
         encrypt_file_shift(input_file)
 
     print("Обработка завершена.")
+
+if __name__ == "__main__":
+    main()'''
+
+import sys
+from modules.txt_process import *
+from modules.json_process import *
+from modules.xml_process import *
+from modules.yaml_process import *
+
+def main():
+    print("Добро пожаловать в программу обработки файлов!")
+    print("Выберите тип файла для обработки:")
+    print("1. TXT")
+    print("2. JSON")
+    print("3. XML")
+    print("4. YAML")
+
+    file_type = input("Введите номер типа файла: ").strip()
+
+    print("Выберите метод обработки:")
+    print("1. Использование eval")
+    print("2. Использование регулярных выражений")
+
+    method = input("Введите номер метода обработки: ").strip()
+
+    input_file = input("Введите путь к входному файлу: ").strip()
+    output_file = input("Введите путь к выходному файлу: ").strip()
+
+    file_manager = None
+
+    # Выбор фабрики на основе типа файла и метода обработки
+    if file_type == "1":  # TXT
+        factory = EvalTxtProcessorFactory() if method == "1" else RegexTxtProcessorFactory()
+        file_manager = TxtFileManager(factory)
+    elif file_type == "2":  # JSON
+        factory = EvalJsonProcessorFactory() if method == "1" else RegexJsonProcessorFactory()
+        file_manager = JsonFileManager(factory)
+    elif file_type == "3":  # XML
+        factory = EvalXmlProcessorFactory() if method == "1" else RegexXmlProcessorFactory()
+        file_manager = XmlFileManager(factory)
+    elif file_type == "4":  # YAML
+        factory = EvalYamlProcessorFactory() if method == "1" else RegexYamlProcessorFactory()
+        file_manager = YamlFileManager(factory)
+    else:
+        print("Неверный выбор типа файла. Завершение работы программы.")
+        sys.exit(1)
+
+    # Обработка файла
+    if file_manager:
+        try:
+            file_manager.process_file(input_file, output_file)
+            print(f"Файл успешно обработан и сохранён в: {output_file}")
+        except Exception as e:
+            print(f"Произошла ошибка при обработке файла: {e}")
 
 if __name__ == "__main__":
     main()
