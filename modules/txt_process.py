@@ -9,7 +9,37 @@ class TextProcessor(ABC):
 
 # Конкретный продукт: обработка текста с использованием eval
 class EvalTextProcessor(TextProcessor):
-    def process(self, text):
+    def process(self, input_string):
+        operators = {'+', '-', '*', '/'}  # Допустимые операторы
+        result = ""
+        expression = ""
+        inside_expression = False
+
+        for char in input_string:
+            if char.isdigit() or char in operators or char in {".", " "}:  # Если символ часть математического выражения
+                expression += char
+                inside_expression = True
+            else:
+                if inside_expression:
+                    try:
+                        # Убираем лишние пробелы и вычисляем выражение
+                        result += str(eval(expression.strip()))
+                    except:
+                        # Если вычислить не удалось, оставляем как есть
+                        result += expression
+                    expression = ""  # Сбрасываем временное выражение
+                    inside_expression = False
+                result += char  # Добавляем текущий символ (который не часть выражения)
+
+        # Проверяем, осталось ли выражение в конце строки
+        if expression:
+            try:
+                result += str(eval(expression.strip()))
+            except:
+                result += expression
+
+        return result
+    '''def process(self, text):
         def is_math_expression(expr):
             try:
                 evaluated = eval(expr)
@@ -44,7 +74,7 @@ class EvalTextProcessor(TextProcessor):
             else:
                 result.append(temp)
 
-        return ''.join(result).replace(' ,', ',').replace(' .', '.')
+        return ''.join(result).replace(' ,', ',').replace(' .', '.')'''
 
 # Конкретный продукт: обработка текста с использованием регулярных выражений
 class RegexTextProcessor(TextProcessor):
