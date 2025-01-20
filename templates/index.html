@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Обработка файлов</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f9;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+        }
+        .container {
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            width: 400px;
+        }
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 20px;
+        }
+        label {
+            font-size: 14px;
+            color: #555;
+            margin-bottom: 5px;
+            display: block;
+        }
+        input[type="file"], input[type="text"], select {
+            width: 100%;
+            padding: 8px;
+            margin-bottom: 20px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+        }
+        select {
+            background-color: #f9f9f9;
+        }
+        button {
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .form-group {
+            margin-bottom: 20px;
+        }
+        .form-group:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        <h1>Обработка файлов</h1>
+        <form action="/process" method="post" enctype="multipart/form-data">
+            <div class="form-group">
+                <label for="file">Выберите файл:</label>
+                <input type="file" name="file" required>
+            </div>
+
+            <div class="form-group">
+                <label for="file_type">Выберите тип файла:</label>
+                <select name="file_type" required>
+                    <option value="1">TXT</option>
+                    <option value="2">JSON</option>
+                    <option value="3">XML</option>
+                    <option value="4">YAML</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="method">Выберите метод обработки:</label>
+                <select name="method" required>
+                    <option value="1">Использование eval</option>
+                    <option value="2">Использование регулярных выражений</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="output_filename">Имя выходного файла:</label>
+                <input type="text" name="output_filename" required>
+            </div>
+
+            <div class="form-group">
+                <label for="zip">Архивировать файл после обработки?</label>
+                <select name="zip">
+                    <option value="no">Нет</option>
+                    <option value="yes">Да</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="encrypt">Шифровать файл после обработки?</label>
+                <select name="encrypt">
+                    <option value="no">Нет</option>
+                    <option value="yes">Да</option>
+                </select>
+            </div>
+
+            <button type="submit">Обработать файл</button>
+        </form>
+    </div>
+
+</body>
+</html>
